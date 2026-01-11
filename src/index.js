@@ -1,15 +1,9 @@
 const app = require("./app");
 const config = require("./config");
-const connectDatabase = require("./config/database");
 
-const startServer = async () => {
-  try {
-    // Connect to MongoDB
-    await connectDatabase();
-
-    // Start Express server
-    app.listen(config.port, () => {
-      console.log(`
+const startServer = () => {
+  app.listen(config.port, () => {
+    console.log(`
 ╔════════════════════════════════════════════╗
 ║         ChatWithMe API Server              ║
 ╠════════════════════════════════════════════╣
@@ -17,12 +11,8 @@ const startServer = async () => {
 ║  📝 Environment: ${config.nodeEnv.padEnd(20)}║
 ║  🔗 http://localhost:${config.port}                  ║
 ╚════════════════════════════════════════════╝
-      `);
-    });
-  } catch (error) {
-    console.error("❌ Failed to start server:", error.message);
-    process.exit(1);
-  }
+    `);
+  });
 };
 
 // Handle uncaught exceptions
