@@ -25,7 +25,10 @@ module.exports = async (req, res) => {
   try {
     // Health check
     if (url === "/api/health" || url === "/health") {
-      return respond(200, { status: "ok", timestamp: new Date().toISOString() });
+      return respond(200, {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      });
     }
 
     // Root
@@ -33,7 +36,11 @@ module.exports = async (req, res) => {
       return respond(200, {
         name: "ChatWithMe API",
         version: "1.0.0",
-        endpoints: { health: "/api/health", session: "/api/session", chat: "/api/chat" }
+        endpoints: {
+          health: "/api/health",
+          session: "/api/session",
+          chat: "/api/chat",
+        },
       });
     }
 
@@ -41,9 +48,12 @@ module.exports = async (req, res) => {
     if (url === "/api/session" && req.method === "POST") {
       const session = await Session.create({
         sessionToken: generateToken(),
-        metadata: { ip: req.headers["x-forwarded-for"] || "unknown" }
+        metadata: { ip: req.headers["x-forwarded-for"] || "unknown" },
       });
-      return respond(201, { sessionToken: session.sessionToken, expiresIn: "24 hours" });
+      return respond(201, {
+        sessionToken: session.sessionToken,
+        expiresIn: "24 hours",
+      });
     }
 
     // Chat
@@ -52,7 +62,8 @@ module.exports = async (req, res) => {
       for await (const chunk of req) body += chunk;
       const { sessionToken, question } = JSON.parse(body);
 
-      if (!sessionToken) return respond(400, { error: "sessionToken required" });
+      if (!sessionToken)
+        return respond(400, { error: "sessionToken required" });
       if (!question) return respond(400, { error: "question required" });
 
       const session = await Session.findOne({ sessionToken });
@@ -61,7 +72,10 @@ module.exports = async (req, res) => {
       const rateCheck = session.checkRateLimit();
       if (!rateCheck.allowed) return respond(429, rateCheck);
 
-      const answer = await llmService.generateResponse(session.messages.slice(-10), question);
+      const answer = await llmService.generateResponse(
+        session.messages.slice(-10),
+        question
+      );
       session.recordLLMRequest();
       session.addMessage("user", question);
       session.addMessage("assistant", answer);
